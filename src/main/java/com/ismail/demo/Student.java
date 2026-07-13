@@ -1,16 +1,19 @@
 package com.ismail.demo;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class Student {
 
     private String name;
     private int ID;
     private int age;
 
-    Student(){
+    public Student(){
 
     }
 
-    Student(String name, int  ID, int age){
+    public Student(String name, int  ID, int age){
         this.name = name;
         this.age = age;
         this.ID = ID;
