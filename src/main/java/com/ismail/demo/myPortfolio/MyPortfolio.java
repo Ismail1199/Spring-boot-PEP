@@ -4,54 +4,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class MyPortfolio {
-    @GetMapping("/mySelf")
-    public String MySelf(){
+    @GetMapping("skills")
+    public String mySkills(){
         return """
-                 <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>My Portfolio</title>
-                </head>
-                <body>
-
-                    <h1>Hi, I'm Ismail K</h1>
-
-                    <p>
-                        I am a 3rd Year B.Tech Computer Science Engineering student
-                        passionate about Java, Spring Boot, Machine Learning, and DevOps.
-                    </p>
-
-                    <hr>
-
-                    <h2>Education</h2>
-                    <table border="1" cellpadding="8">
-                        <tr>
-                            <th>Qualification</th>
-                            <th>Institution</th>
-                            <th>Year</th>
-                        </tr>
-                        <tr>
-                            <td>B.Tech Computer Science Engineering</td>
-                            <td>Your College Name</td>
-                            <td>2024 - 2028</td>
-                        </tr>
-                        <tr>
-                            <td>Higher Secondary (12th)</td>
-                            <td>Your School Name</td>
-                            <td>2024</td>
-                        </tr>
-                        <tr>
-                            <td>Secondary School (10th)</td>
-                            <td>Your School Name</td>
-                            <td>2022</td>
-                        </tr>
-                    </table>
-
-                    <hr>
-
-                    <h2>Skills</h2>
+                <h1>Skills</h1>
                     <ul>
                         <li>Java</li>
                         <li>Spring Boot</li>
@@ -62,17 +18,43 @@ public class MyPortfolio {
                         <li>Docker</li>
                         <li>Machine Learning</li>
                     </ul>
+                """;
+    }
 
-                    <hr>
-
-                    <h2>Projects</h2>
+    @GetMapping("/projects")
+    public String myProjects(){
+        return """
+                <h1>Projects</h1>
                     <ol>
                         <li>House Price Prediction using Machine Learning</li>
                         <li>Garbage Collection Visualizer</li>
                         <li>Spring Boot REST APIs</li>
                     </ol>
+                """;
+    }
 
-                    <hr>
+    @GetMapping("/education")
+    public String myEducation(){
+        return """
+                <h1>Education</h1>
+                    <ul>
+                        <li>B.Tech CSE  - LPU</li>
+                        <li>12th        - GVHSS Kadirur</li>
+                        <li>10th        - RGMHSS Mokeri</li>
+                    </ul>
+                """;
+    }
+
+
+    @GetMapping("/mySelf")
+    public String MySelf(){
+        return """
+                    <h1>Hi, I'm Ismail K</h1>
+
+                    <p>
+                        I am a 3rd Year B.Tech Computer Science Engineering student
+                        passionate about Java, Spring Boot, Machine Learning, and DevOps.
+                    </p>
 
                     <h2>Profiles</h2>
                     <ul>
@@ -97,14 +79,8 @@ public class MyPortfolio {
                             </a>
                         </li>
                     </ul>
-
-                    <hr>
-
                     <h2>Contact</h2>
                     <p><b>Email:</b> your-email@example.com</p>
-
-                </body>
-                </html>
                 """;
     }
 }
