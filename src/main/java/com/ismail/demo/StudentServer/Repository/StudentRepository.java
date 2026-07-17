@@ -1,7 +1,7 @@
-package com.ismail.demo.StudentServer;
+package com.ismail.demo.StudentServer.Repository;
 
+import com.ismail.demo.StudentServer.Entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 //@Repository
 public interface StudentRepository extends JpaRepository<Student, Integer> {

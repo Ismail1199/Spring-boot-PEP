@@ -1,4 +1,4 @@
-package com.ismail.demo.StudentServer;
+package com.ismail.demo.StudentServer.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

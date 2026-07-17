@@ -1,5 +1,7 @@
-package com.ismail.demo.StudentServer;
+package com.ismail.demo.StudentServer.Service;
 
+import com.ismail.demo.StudentServer.Repository.StudentRepository;
+import com.ismail.demo.StudentServer.Entity.Student;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,5 +25,9 @@ public class StudentService {
 
         studentRepository.save(student);
         return student;
+    }
+
+    public Student getStudentById(int id){
+        return studentRepository.findById(id).orElse(null);
     }
 }
