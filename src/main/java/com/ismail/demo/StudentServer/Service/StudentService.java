@@ -30,4 +30,30 @@ public class StudentService {
     public Student getStudentById(int id){
         return studentRepository.findById(id).orElse(null);
     }
+
+    public Student updateStudentById(int id, Student student){
+        Student existing = studentRepository.findById(id).orElse(null);
+
+        if(existing == null){
+            return null;
+        }
+
+        existing.setName(student.getName());
+        existing.setId(student.getId());
+        existing.setAge(student.getAge());
+        existing.setDept(student.getDept());
+
+        return studentRepository.save(existing);
+    }
+
+    public boolean deleteStudentById(int id){
+        Student existing = studentRepository.findById(id).orElse(null);
+
+        if(existing == null){
+            return false;
+        }
+
+        studentRepository.delete(existing);
+        return true;
+    }
 }
