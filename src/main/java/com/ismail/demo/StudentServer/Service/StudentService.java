@@ -39,7 +39,6 @@ public class StudentService {
         }
 
         existing.setName(student.getName());
-        existing.setId(student.getId());
         existing.setAge(student.getAge());
         existing.setDept(student.getDept());
 
