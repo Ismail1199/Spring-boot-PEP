@@ -4,6 +4,8 @@ import com.ismail.demo.StudentServer.Repository.StudentRepository;
 import com.ismail.demo.StudentServer.Entity.Student;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class StudentService {
 
@@ -19,9 +21,12 @@ public class StudentService {
         int age = student.getAge();
         String dept = student.getDept();
 
-        if(id<0 || name==null || age<0 || dept==null) {
+        if(id<0 || name==null || age<0 || dept==null || name.isBlank() || dept.isBlank()) {
             return null;
         }
+
+        student.setCreatedAt(LocalDateTime.now());
+        student.setUpdatedAt(LocalDateTime.now());
 
         studentRepository.save(student);
         return student;
@@ -41,7 +46,7 @@ public class StudentService {
         existing.setName(student.getName());
         existing.setAge(student.getAge());
         existing.setDept(student.getDept());
-
+        existing.setUpdatedAt(LocalDateTime.now());
         return studentRepository.save(existing);
     }
 
