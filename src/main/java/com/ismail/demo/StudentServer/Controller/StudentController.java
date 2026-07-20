@@ -1,5 +1,8 @@
 package com.ismail.demo.StudentServer.Controller;
 
+import com.ismail.demo.StudentServer.DTO.ChangePasswordDTO;
+import com.ismail.demo.StudentServer.DTO.RequestStudentDTO;
+import com.ismail.demo.StudentServer.DTO.ResponseStudentDTO;
 import com.ismail.demo.StudentServer.Entity.Student;
 import com.ismail.demo.StudentServer.Service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +22,8 @@ public class StudentController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Student> storeStudent(@RequestBody Student student){
-        Student result = studentService.studentValidate(student);
+    public ResponseEntity<ResponseStudentDTO> storeStudent(@RequestBody Student student){
+        ResponseStudentDTO result = studentService.studentValidate(student);
         if(result==null){
             return ResponseEntity.status(400).body(result);
         }
@@ -29,13 +32,16 @@ public class StudentController {
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getStudentById(@PathVariable int id){
-        Student student = studentService.getStudentById(id);
+        ResponseStudentDTO student = studentService.getStudentById(id);
+        if(student==null){
+            return ResponseEntity.status(404).body("Student not found");
+        }
         return ResponseEntity.status(200).body(student);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateStudentById(@PathVariable int id, @RequestBody Student student){
-        Student updatedStudent = studentService.updateStudentById(id, student);
+    public ResponseEntity<?> updateStudentById(@PathVariable int id, @RequestBody RequestStudentDTO dto){
+        ResponseStudentDTO updatedStudent = studentService.updateStudent(id, dto);
 
         if(updatedStudent == null){
             return ResponseEntity.status(404).body("student not found");
@@ -53,6 +59,15 @@ public class StudentController {
         }
 
         return ResponseEntity.status(200).body("Student deleted successfully");
+    }
+
+    @PutMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@PathVariable int id, @RequestBody ChangePasswordDTO dto) {
+        boolean passwordChanged = studentService.changePassword(id, dto);
+        if(!passwordChanged){
+            return ResponseEntity.status(404).body("student not found or incorrect password");
+        }
+        return ResponseEntity.status(200).body("Password changed successfully");
     }
 
 }

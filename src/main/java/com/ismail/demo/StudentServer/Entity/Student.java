@@ -15,6 +15,8 @@ public class Student {
     String name;
     int age;
     String dept;
+    String password;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -54,6 +56,14 @@ public class Student {
         return age;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setAge(int age) {
         this.age = age;
     }
@@ -65,5 +75,7 @@ public class Student {
     public void setDept(String dept) {
         this.dept = dept;
     }
+
+
 
 }

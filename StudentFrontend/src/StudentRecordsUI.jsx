@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, UserPlus, PenLine, Trash2, Settings2, X, ChevronRight } from "lucide-react";
 
 const FONTS = `
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
 `;
 
 const TABS = [
     { key: "lookup", label: "Look Up", icon: Search },
     { key: "enroll", label: "Enroll", icon: UserPlus },
     { key: "amend", label: "Amend", icon: PenLine },
+    { key: "password", label: "Password", icon: Settings2 },
     { key: "withdraw", label: "Withdraw", icon: Trash2 },
 ];
 
@@ -29,7 +30,7 @@ function StampMark({ text, tone, show }) {
                 color: tone,
                 borderRadius: "6px",
                 padding: "6px 14px",
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily: "'Courier Prime', monospace",
                 fontWeight: 700,
                 fontSize: "20px",
                 letterSpacing: "3px",
@@ -99,7 +100,7 @@ function Field({ label, children }) {
       <span
           style={{
               display: "block",
-              fontFamily: "'IBM Plex Mono', monospace",
+              fontFamily: "'Courier Prime', monospace",
               fontSize: "10.5px",
               letterSpacing: "1.5px",
               textTransform: "uppercase",
@@ -119,7 +120,7 @@ const inputStyle = {
     background: "transparent",
     border: "none",
     borderBottom: "1.5px solid var(--ink-30)",
-    fontFamily: "'IBM Plex Mono', monospace",
+    fontFamily: "'Courier Prime', monospace",
     fontSize: "15px",
     color: "var(--ink)",
     padding: "4px 2px",
@@ -145,7 +146,7 @@ function Button({ children, onClick, tone = "brass", disabled, type = "button" }
             onClick={onClick}
             disabled={disabled}
             style={{
-                fontFamily: "'IBM Plex Mono', monospace",
+                fontFamily: "'Courier Prime', monospace",
                 fontSize: "12.5px",
                 letterSpacing: "1.5px",
                 textTransform: "uppercase",
@@ -183,13 +184,17 @@ export default function StudentRecordsUI() {
     const [record, setRecord] = useState(null);
     const [lookupStamp, setLookupStamp] = useState(null);
 
-    const [enrollForm, setEnrollForm] = useState({ name: "", age: "", dept: "", password: "" });
+    const [enrollForm, setEnrollForm] = useState({ name: "", age: "", dept: "", password:"" });
     const [enrollStamp, setEnrollStamp] = useState(null);
 
     const [amendId, setAmendId] = useState("");
     const [amendLoaded, setAmendLoaded] = useState(null);
     const [amendForm, setAmendForm] = useState({ name: "", age: "", dept: "" });
     const [amendStamp, setAmendStamp] = useState(null);
+
+    const [passwordId, setPasswordId] = useState("");
+    const [passwordForm, setPasswordForm] = useState({oldPassword:"",newPassword:""});
+    const [passwordStamp, setPasswordStamp] = useState(null);
 
     const [withdrawId, setWithdrawId] = useState("");
     const [withdrawStamp, setWithdrawStamp] = useState(null);
@@ -265,7 +270,7 @@ export default function StudentRecordsUI() {
             if (ok && body) {
                 setEnrollStamp({ text: "enrolled", tone: "var(--slate)" });
                 addEntry("enroll", "recorded", `#${body.id} ${payload.name}`);
-                setEnrollForm({ name: "", age: "", dept: "", password: "" });
+                setEnrollForm({ name: "", age: "", dept: "", password:"" });
             } else {
                 setEnrollStamp({ text: "declined", tone: "var(--rust)" });
                 addEntry("enroll", "declined", `${payload.name || "unnamed"} — invalid fields (${status})`);
@@ -325,6 +330,29 @@ export default function StudentRecordsUI() {
         setLoading(false);
     }
 
+
+    async function doChangePassword() {
+        if (!passwordId) return;
+        setLoading(true);
+        setPasswordStamp(null);
+        try {
+            const { ok, status } = await call(`/change-password/${passwordId}`, {
+                method: "PUT",
+                body: JSON.stringify(passwordForm),
+            });
+            if (ok) {
+                setPasswordStamp({ text: "changed", tone: "var(--slate)" });
+                addEntry("password", "recorded", `#${passwordId} password changed`);
+                setPasswordForm({oldPassword:"",newPassword:""});
+            } else {
+                setPasswordStamp({ text: "declined", tone: "var(--rust)" });
+                addEntry("password", "declined", `#${passwordId} - ${status}`);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
     async function doWithdraw() {
         if (!withdrawId) return;
         setLoading(true);
@@ -349,19 +377,19 @@ export default function StudentRecordsUI() {
     return (
         <div
             style={{
-                "--ink": "#1E2A22",
-                "--ink-60": "rgba(30,42,34,0.62)",
-                "--ink-30": "rgba(30,42,34,0.3)",
-                "--ink-20": "rgba(30,42,34,0.16)",
-                "--parchment": "#F1EAD3",
-                "--rule": "rgba(30,42,34,0.08)",
-                "--brass": "#A9762F",
-                "--rust": "#8B3A32",
-                "--slate": "#3E5C56",
-                "--drawer": "#1F3B33",
-                fontFamily: "'IBM Plex Mono', monospace",
+                "--ink": "#2B1B10",
+                "--ink-60": "rgba(43,27,16,0.62)",
+                "--ink-30": "rgba(43,27,16,0.3)",
+                "--ink-20": "rgba(43,27,16,0.16)",
+                "--parchment": "#F3E6D2",
+                "--rule": "rgba(43,27,16,0.08)",
+                "--brass": "#B8863B",
+                "--rust": "#8B4226",
+                "--slate": "#6F4E37",
+                "--drawer": "#3E2B1D",
+                fontFamily: "'Courier Prime', monospace",
                 background:
-                    "radial-gradient(ellipse at top, #2B4A40 0%, #1F3B33 55%, #16281F 100%)",
+                    "radial-gradient(ellipse at top, #4A3222 0%, #3E2B1D 55%, #241811 100%)",
                 minHeight: "100%",
                 padding: "36px 20px 50px",
                 color: "var(--ink)",
@@ -377,13 +405,13 @@ export default function StudentRecordsUI() {
                         alignItems: "flex-end",
                         justifyContent: "space-between",
                         marginBottom: "22px",
-                        color: "#F1EAD3",
+                        color: "#F3E6D2",
                     }}
                 >
                     <div>
                         <div
                             style={{
-                                fontFamily: "'IBM Plex Mono', monospace",
+                                fontFamily: "'Courier Prime', monospace",
                                 fontSize: "11px",
                                 letterSpacing: "3px",
                                 textTransform: "uppercase",
@@ -395,7 +423,7 @@ export default function StudentRecordsUI() {
                         </div>
                         <h1
                             style={{
-                                fontFamily: "'Fraunces', serif",
+                                fontFamily: "'Special Elite', cursive",
                                 fontWeight: 600,
                                 fontSize: "34px",
                                 margin: 0,
@@ -405,65 +433,7 @@ export default function StudentRecordsUI() {
                             Student Records
                         </h1>
                     </div>
-                    <button
-                        onClick={() => setShowSettings((s) => !s)}
-                        style={{
-                            background: "transparent",
-                            border: "1px solid rgba(241,234,211,0.35)",
-                            borderRadius: "3px",
-                            color: "#F1EAD3",
-                            padding: "9px 12px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "7px",
-                            fontFamily: "'IBM Plex Mono', monospace",
-                            fontSize: "11px",
-                            letterSpacing: "1px",
-                            textTransform: "uppercase",
-                        }}
-                    >
-                        <Settings2 size={14} /> Server
-                    </button>
                 </div>
-
-                {showSettings && (
-                    <div
-                        style={{
-                            background: "rgba(241,234,211,0.08)",
-                            border: "1px solid rgba(241,234,211,0.2)",
-                            borderRadius: "4px",
-                            padding: "14px 16px",
-                            marginBottom: "20px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                        }}
-                    >
-            <span style={{ color: "#F1EAD3", fontSize: "11px", letterSpacing: "1px", opacity: 0.75, whiteSpace: "nowrap" }}>
-              API BASE URL
-            </span>
-                        <input
-                            value={apiBase}
-                            onChange={(e) => setApiBase(e.target.value)}
-                            placeholder="http://localhost:8080"
-                            style={{
-                                flex: 1,
-                                background: "transparent",
-                                border: "none",
-                                borderBottom: "1.5px solid rgba(241,234,211,0.4)",
-                                color: "#F1EAD3",
-                                fontFamily: "'IBM Plex Mono', monospace",
-                                fontSize: "13px",
-                                padding: "4px 2px",
-                                outline: "none",
-                            }}
-                        />
-                        <button onClick={() => setShowSettings(false)} style={{ background: "transparent", border: "none", color: "#F1EAD3", cursor: "pointer" }}>
-                            <X size={16} />
-                        </button>
-                    </div>
-                )}
 
                 {/* Tabs */}
                 <div style={{ display: "flex", gap: "2px", marginBottom: "0" }}>
@@ -475,13 +445,13 @@ export default function StudentRecordsUI() {
                                 onClick={() => setTab(key)}
                                 style={{
                                     flex: 1,
-                                    background: active ? "var(--parchment)" : "rgba(241,234,211,0.14)",
-                                    color: active ? "var(--ink)" : "#F1EAD3",
+                                    background: active ? "var(--parchment)" : "rgba(243,230,210,0.14)",
+                                    color: active ? "var(--ink)" : "#F3E6D2",
                                     border: "none",
                                     borderTopLeftRadius: "6px",
                                     borderTopRightRadius: "6px",
                                     padding: "12px 8px",
-                                    fontFamily: "'IBM Plex Mono', monospace",
+                                    fontFamily: "'Courier Prime', monospace",
                                     fontSize: "11.5px",
                                     letterSpacing: "1.2px",
                                     textTransform: "uppercase",
@@ -505,25 +475,25 @@ export default function StudentRecordsUI() {
                     {tab === "lookup" && (
                         <RuledCard>
                             <StampMark text={lookupStamp?.text || ""} tone={lookupStamp?.tone || "var(--slate)"} show={!!lookupStamp} />
-                            <div style={{ display: "flex", gap: "12px", alignItems: "flex-end", marginBottom: "22px" }}>
-                                <div style={{ flex: 1 }}>
-                                    <Field label="Student ID">
-                                        <TextInput
-                                            value={lookupId}
-                                            onChange={(e) => setLookupId(e.target.value)}
-                                            placeholder="e.g. 1231"
-                                            onKeyDown={(e) => e.key === "Enter" && doLookup()}
-                                        />
-                                    </Field>
+                            <div style={{ marginBottom: "22px" }}>
+                                <Field label="Student ID">
+                                    <TextInput
+                                        value={lookupId}
+                                        onChange={(e) => setLookupId(e.target.value)}
+                                        placeholder="e.g. 1231"
+                                        onKeyDown={(e) => e.key === "Enter" && doLookup()}
+                                    />
+                                </Field>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <Button onClick={doLookup} disabled={loading || !lookupId}>
+                                        <Search size={13} /> Find
+                                    </Button>
                                 </div>
-                                <Button onClick={doLookup} disabled={loading || !lookupId}>
-                                    <Search size={13} /> Find
-                                </Button>
                             </div>
 
                             {record ? (
                                 <div>
-                                    <div style={{ fontFamily: "'Fraunces', serif", fontSize: "22px", marginBottom: "10px" }}>
+                                    <div style={{ fontFamily: "'Special Elite', cursive", fontSize: "22px", marginBottom: "10px" }}>
                                         {record.name}
                                     </div>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "13.5px" }}>
@@ -560,17 +530,11 @@ export default function StudentRecordsUI() {
                                 <Field label="Department">
                                     <TextInput value={enrollForm.dept} onChange={(e) => setEnrollForm({ ...enrollForm, dept: e.target.value })} placeholder="Enter your department" />
                                 </Field>
-
                                 <Field label="Password">
-                                    <TextInput
-                                        type="password"
-                                        value={enrollForm.password}
-                                        onChange={(e) => setEnrollForm({ ...enrollForm, password: e.target.value })}
-                                        placeholder="Create a password"
-                                    />
+                                    <TextInput type="password" value={enrollForm.password} onChange={(e)=>setEnrollForm({...enrollForm,password:e.target.value})} placeholder="Create a password"/>
                                 </Field>
                             </div>
-                            <div style={{ marginTop: "10px" }}>
+                            <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end" }}>
                                 <Button
                                     onClick={doEnroll}
                                     disabled={loading || !enrollForm.name || !enrollForm.dept || !enrollForm.password || enrollForm.age === ""}
@@ -584,20 +548,20 @@ export default function StudentRecordsUI() {
                     {tab === "amend" && (
                         <RuledCard>
                             <StampMark text={amendStamp?.text || ""} tone={amendStamp?.tone || "var(--slate)"} show={!!amendStamp} />
-                            <div style={{ display: "flex", gap: "12px", alignItems: "flex-end", marginBottom: "20px" }}>
-                                <div style={{ flex: 1 }}>
-                                    <Field label="Student ID to amend">
-                                        <TextInput
-                                            value={amendId}
-                                            onChange={(e) => setAmendId(e.target.value)}
-                                            placeholder="e.g. 1231"
-                                            onKeyDown={(e) => e.key === "Enter" && loadForAmend()}
-                                        />
-                                    </Field>
+                            <div style={{ marginBottom: "20px" }}>
+                                <Field label="Student ID to amend">
+                                    <TextInput
+                                        value={amendId}
+                                        onChange={(e) => setAmendId(e.target.value)}
+                                        placeholder="e.g. 1231"
+                                        onKeyDown={(e) => e.key === "Enter" && loadForAmend()}
+                                    />
+                                </Field>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <Button onClick={loadForAmend} disabled={loading || !amendId} tone="slate">
+                                        <ChevronRight size={13} /> Pull card
+                                    </Button>
                                 </div>
-                                <Button onClick={loadForAmend} disabled={loading || !amendId} tone="slate">
-                                    <ChevronRight size={13} /> Pull card
-                                </Button>
                             </div>
 
                             {amendLoaded && (
@@ -613,9 +577,11 @@ export default function StudentRecordsUI() {
                                         {/*  <TextInput value={amendForm.dept} onChange={(e) => setAmendForm({ ...amendForm, dept: e.target.value })} />*/}
                                         {/*</Field>*/}
                                     </div>
-                                    <Button onClick={doAmend} disabled={loading}>
-                                        <PenLine size={13} /> Save amendment
-                                    </Button>
+                                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                        <Button onClick={doAmend} disabled={loading}>
+                                            <PenLine size={13} /> Save amendment
+                                        </Button>
+                                    </div>
                                 </>
                             )}
 
@@ -627,23 +593,46 @@ export default function StudentRecordsUI() {
                         </RuledCard>
                     )}
 
+
+                    {tab === "password" && (
+                        <RuledCard>
+                            <StampMark text={passwordStamp?.text || ""} tone={passwordStamp?.tone || "var(--slate)"} show={!!passwordStamp}/>
+                            <Field label="Student ID">
+                                <TextInput value={passwordId} onChange={(e)=>setPasswordId(e.target.value)} />
+                            </Field>
+                            <Field label="Old Password">
+                                <TextInput type="password" value={passwordForm.oldPassword}
+                                           onChange={(e)=>setPasswordForm({...passwordForm,oldPassword:e.target.value})}/>
+                            </Field>
+                            <Field label="New Password">
+                                <TextInput type="password" value={passwordForm.newPassword}
+                                           onChange={(e)=>setPasswordForm({...passwordForm,newPassword:e.target.value})}/>
+                            </Field>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                <Button onClick={doChangePassword} disabled={loading || !passwordId || !passwordForm.oldPassword || !passwordForm.newPassword}>
+                                    Change Password
+                                </Button>
+                            </div>
+                        </RuledCard>
+                    )}
+
                     {tab === "withdraw" && (
                         <RuledCard>
                             <StampMark text={withdrawStamp?.text || ""} tone={withdrawStamp?.tone || "var(--rust)"} show={!!withdrawStamp} />
-                            <div style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
-                                <div style={{ flex: 1 }}>
-                                    <Field label="Student ID to withdraw">
-                                        <TextInput
-                                            value={withdrawId}
-                                            onChange={(e) => setWithdrawId(e.target.value)}
-                                            placeholder="e.g. 1231"
-                                            onKeyDown={(e) => e.key === "Enter" && doWithdraw()}
-                                        />
-                                    </Field>
+                            <div>
+                                <Field label="Student ID to withdraw">
+                                    <TextInput
+                                        value={withdrawId}
+                                        onChange={(e) => setWithdrawId(e.target.value)}
+                                        placeholder="e.g. 1231"
+                                        onKeyDown={(e) => e.key === "Enter" && doWithdraw()}
+                                    />
+                                </Field>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <Button onClick={doWithdraw} disabled={loading || !withdrawId} tone="rust">
+                                        <Trash2 size={13} /> Withdraw
+                                    </Button>
                                 </div>
-                                <Button onClick={doWithdraw} disabled={loading || !withdrawId} tone="rust">
-                                    <Trash2 size={13} /> Withdraw
-                                </Button>
                             </div>
                             <div style={{ color: "var(--ink-60)", fontSize: "13px", marginTop: "18px" }}>
                                 This pulls the card from the drawer for good — there is no undo.
@@ -656,7 +645,7 @@ export default function StudentRecordsUI() {
                 <div style={{ marginTop: "26px" }}>
                     <div
                         style={{
-                            color: "rgba(241,234,211,0.55)",
+                            color: "rgba(243,230,210,0.55)",
                             fontSize: "10.5px",
                             letterSpacing: "2px",
                             textTransform: "uppercase",
@@ -669,7 +658,7 @@ export default function StudentRecordsUI() {
                         ref={ledgerEndRef}
                         style={{
                             background: "rgba(20,32,26,0.55)",
-                            border: "1px solid rgba(241,234,211,0.14)",
+                            border: "1px solid rgba(243,230,210,0.14)",
                             borderRadius: "4px",
                             maxHeight: "160px",
                             overflowY: "auto",
@@ -677,7 +666,7 @@ export default function StudentRecordsUI() {
                         }}
                     >
                         {ledger.length === 0 && (
-                            <div style={{ color: "rgba(241,234,211,0.4)", fontSize: "12.5px" }}>
+                            <div style={{ color: "rgba(243,230,210,0.4)", fontSize: "12.5px" }}>
                                 No entries yet. Actions taken on the cards above are logged here.
                             </div>
                         )}
@@ -688,9 +677,9 @@ export default function StudentRecordsUI() {
                                     display: "flex",
                                     gap: "10px",
                                     fontSize: "12.5px",
-                                    color: "#F1EAD3",
+                                    color: "#F3E6D2",
                                     padding: "4px 0",
-                                    borderBottom: i < ledger.length - 1 ? "1px solid rgba(241,234,211,0.08)" : "none",
+                                    borderBottom: i < ledger.length - 1 ? "1px solid rgba(243,230,210,0.08)" : "none",
                                 }}
                             >
                                 <span style={{ opacity: 0.45, minWidth: "72px" }}>{entry.time}</span>
@@ -701,10 +690,10 @@ export default function StudentRecordsUI() {
                                     style={{
                                         color:
                                             entry.status === "error" || entry.status === "declined"
-                                                ? "#D98A7F"
+                                                ? "#D98A6B"
                                                 : entry.status === "removed"
                                                     ? "#D9B27D"
-                                                    : "#8FD1B9",
+                                                    : "#B7C48A",
                                     }}
                                 >
                   {entry.status}
@@ -715,7 +704,74 @@ export default function StudentRecordsUI() {
                     </div>
                 </div>
 
-                <div style={{ color: "rgba(241,234,211,0.35)", fontSize: "11px", marginTop: "14px", textAlign: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        marginTop: "22px",
+                    }}
+                >
+                    <button
+                        onClick={() => setShowSettings((s) => !s)}
+                        style={{
+                            background: "transparent",
+                            border: "1px solid rgba(243,230,210,0.35)",
+                            borderRadius: "3px",
+                            color: "#F3E6D2",
+                            padding: "9px 12px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "7px",
+                            fontFamily: "'Courier Prime', monospace",
+                            fontSize: "11px",
+                            letterSpacing: "1px",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        <Settings2 size={14} /> Server
+                    </button>
+                </div>
+
+                {showSettings && (
+                    <div
+                        style={{
+                            background: "rgba(243,230,210,0.08)",
+                            border: "1px solid rgba(243,230,210,0.2)",
+                            borderRadius: "4px",
+                            padding: "14px 16px",
+                            marginTop: "14px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                        }}
+                    >
+            <span style={{ color: "#F3E6D2", fontSize: "11px", letterSpacing: "1px", opacity: 0.75, whiteSpace: "nowrap" }}>
+              API BASE URL
+            </span>
+                        <input
+                            value={apiBase}
+                            onChange={(e) => setApiBase(e.target.value)}
+                            placeholder="http://localhost:8080"
+                            style={{
+                                flex: 1,
+                                background: "transparent",
+                                border: "none",
+                                borderBottom: "1.5px solid rgba(243,230,210,0.4)",
+                                color: "#F3E6D2",
+                                fontFamily: "'Courier Prime', monospace",
+                                fontSize: "13px",
+                                padding: "4px 2px",
+                                outline: "none",
+                            }}
+                        />
+                        <button onClick={() => setShowSettings(false)} style={{ background: "transparent", border: "none", color: "#F3E6D2", cursor: "pointer" }}>
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
+
+                <div style={{ color: "rgba(243,230,210,0.35)", fontSize: "11px", marginTop: "10px", textAlign: "center" }}>
                     Points at your Spring Boot server &mdash; set the address under &ldquo;Server&rdquo; if it isn&rsquo;t on localhost:8080.
                     Ensure CORS is enabled on the backend for this origin.
                 </div>
