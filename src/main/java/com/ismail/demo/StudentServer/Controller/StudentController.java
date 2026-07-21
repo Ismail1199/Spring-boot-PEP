@@ -2,6 +2,7 @@ package com.ismail.demo.StudentServer.Controller;
 
 import com.ismail.demo.StudentServer.DTO.CreateStudentRequestDTO;
 import com.ismail.demo.StudentServer.DTO.CreateStudentResponseDTO;
+import com.ismail.demo.StudentServer.DTO.UpdateStudentResponseDTO;
 import com.ismail.demo.StudentServer.Entity.Student;
 import com.ismail.demo.StudentServer.Service.StudentService;
 import jakarta.validation.Valid;
@@ -21,14 +22,12 @@ public class StudentController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> storeStudent(@Valid @RequestBody CreateStudentRequestDTO createStudentRequestDTO) {
-        CreateStudentResponseDTO result = studentService.studentValidate(createStudentRequestDTO);
+    public ResponseEntity<CreateStudentResponseDTO> storeStudent(
+            @RequestBody CreateStudentRequestDTO dto) {
 
-        if(result == null)
-        {
-            return ResponseEntity.status(400).body("Invalid input");
-        }
-        return  ResponseEntity.status(201).body(result);
+        CreateStudentResponseDTO result = studentService.studentValidate(dto);
+
+        return ResponseEntity.status(201).body(result);
     }
 
     @GetMapping("/getStudent/{id}")
@@ -45,7 +44,7 @@ public class StudentController {
 
     @PutMapping("/updateStudent/{id}")
     public ResponseEntity<?> updateStudent(@PathVariable int id, @Valid @RequestBody Student student){
-        Student result = studentService.studentUpdate(id, student);
+        UpdateStudentResponseDTO result = studentService.studentUpdate(id, student);
         if(result == null)
         {
             return ResponseEntity.status(400).body("Invalid input");

@@ -2,12 +2,16 @@ package com.ismail.demo.StudentServer.Service;
 
 import com.ismail.demo.StudentServer.DTO.CreateStudentRequestDTO;
 import com.ismail.demo.StudentServer.DTO.CreateStudentResponseDTO;
+import com.ismail.demo.StudentServer.DTO.UpdateStudentResponseDTO;
 import com.ismail.demo.StudentServer.Entity.Student;
+import com.ismail.demo.StudentServer.Exception.InvalidEmailException;
 import com.ismail.demo.StudentServer.Repository.StudentRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class StudentService {
@@ -18,37 +22,40 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
-    public CreateStudentResponseDTO studentValidate(CreateStudentRequestDTO createStudentRequestDTO) {
+    public CreateStudentResponseDTO studentValidate(CreateStudentRequestDTO dto) {
 
-        if (!isValidEmail(createStudentRequestDTO.getEmail())) {
-            throw new RuntimeException("Invalid email format");
+        if (!isValidEmail(dto.getEmail())) {
+            throw new InvalidEmailException("Invalid email format");
         }
 
-        Student student = mapToStudent(createStudentRequestDTO);
+        Student student = mapToStudent(dto);
         studentRepository.save(student);
 
         return mapToResponseDTO(student);
     }
 
     public Student getStudentById(int id) {
-        return studentRepository.findById(id).orElse(null);
+        Optional<Student> student = studentRepository.findById(id);
+        return student.get();
     }
 
-    public Student studentUpdate(int id, Student student) {
+    public UpdateStudentResponseDTO studentUpdate(
+            int id,
+            @Valid Student updateStudentRequestDTO) {
 
-        Student result = studentRepository.findById(id).orElse(null);
+        Student student = studentRepository.findById(id).orElse(null);
 
-        if (result == null) {
+        if (student == null) {
             return null;
         }
 
-        result.setName(student.getName());
-        result.setAge(student.getAge());
-        result.setDepartment(student.getDepartment());
-        result.setUpdatedAt(LocalDateTime.now());
-        result.setEmail(student.getEmail());
+        student.setName(updateStudentRequestDTO.getName());
+        student.setAge(updateStudentRequestDTO.getAge());
+        student.setUpdatedAt(LocalDateTime.now());
 
-        return studentRepository.save(result);
+        studentRepository.save(student);
+
+        return mapToUpdateResponseDTO(student);
     }
 
     public Student deleteStudent(int id) {
@@ -85,13 +92,25 @@ public class StudentService {
 
     }
 
+    private UpdateStudentResponseDTO mapToUpdateResponseDTO(Student student) {
+
+        UpdateStudentResponseDTO dto = new UpdateStudentResponseDTO();
+
+        dto.setId(student.getId());
+        dto.setName(student.getName());
+        dto.setAge(student.getAge());
+        dto.setDepartment(student.getDepartment());
+
+        return dto;
+    }
+
     private boolean isValidEmail(String email) {
         if (email == null || email.isBlank()) {
             return false;
         }
-        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
-        return email.matches(regex);
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
+
 
 }
