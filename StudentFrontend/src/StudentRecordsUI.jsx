@@ -188,6 +188,21 @@ export default function StudentRecordsUI() {
         setLog((l) => [{ id: Date.now() + Math.random(), message, status, at: new Date() }, ...l].slice(0, 12));
     }
 
+    function errMsg(data, fallback) {
+        if (typeof data === "string" && data.trim()) return data;
+        if (data && typeof data === "object") {
+            if (Array.isArray(data.errors) && data.errors.length) {
+                return data.errors
+                    .map((er) => (er.field ? `${er.field}: ${er.defaultMessage || "invalid"}` : er.defaultMessage))
+                    .filter(Boolean)
+                    .join("; ");
+            }
+            if (data.detail) return data.detail; // Spring 6 ProblemDetail
+            if (data.message) return data.message;
+        }
+        return fallback;
+    }
+
     async function request(path, options) {
         const res = await fetch(`${apiBase}${path}`, {
             headers: { "Content-Type": "application/json" },
@@ -210,7 +225,7 @@ export default function StudentRecordsUI() {
         try {
             const { ok, data } = await request(`/getStudent/${lookupId}`);
             if (!ok) {
-                pushLog(`Lookup #${lookupId}: ${typeof data === "string" ? data : "not found"}`, "declined");
+                pushLog(`Lookup #${lookupId}: ${errMsg(data, "not found")}`, "declined");
             } else {
                 setLookupResult(data);
                 pushLog(`Pulled card for #${lookupId} \u2014 ${data.name}`, "success");
@@ -233,7 +248,7 @@ export default function StudentRecordsUI() {
             };
             const { ok, data } = await request("/create", { method: "POST", body: JSON.stringify(body) });
             if (!ok) {
-                pushLog(`Enroll ${enrollForm.name || "student"}: ${typeof data === "string" ? data : "rejected"}`, "declined");
+                pushLog(`Enroll ${enrollForm.name || "student"}: ${errMsg(data, "rejected")}`, "declined");
             } else {
                 setEnrollResult(data);
                 pushLog(`Enrolled ${data.name} as #${data.id}`, "success");
@@ -253,7 +268,7 @@ export default function StudentRecordsUI() {
         try {
             const { ok, data } = await request(`/getStudent/${amendId}`);
             if (!ok) {
-                pushLog(`Pull card #${amendId}: ${typeof data === "string" ? data : "not found"}`, "declined");
+                pushLog(`Pull card #${amendId}: ${errMsg(data, "not found")}`, "declined");
             } else {
                 setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
                 pushLog(`Pulled card #${amendId} for amendment`, "success");
@@ -277,7 +292,7 @@ export default function StudentRecordsUI() {
             };
             const { ok, data } = await request(`/updateStudent/${amendId}`, { method: "PUT", body: JSON.stringify(body) });
             if (!ok) {
-                pushLog(`Amend #${amendId}: ${typeof data === "string" ? data : "rejected"}`, "declined");
+                pushLog(`Amend #${amendId}: ${errMsg(data, "rejected")}`, "declined");
             } else {
                 pushLog(`Amended card #${amendId} \u2014 ${data.name}`, "success");
                 setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
@@ -295,7 +310,7 @@ export default function StudentRecordsUI() {
         try {
             const { ok, data } = await request(`/deleteStudent/${withdrawId}`, { method: "DELETE" });
             if (!ok) {
-                pushLog(`Withdraw #${withdrawId}: ${typeof data === "string" ? data : "rejected"}`, "declined");
+                pushLog(`Withdraw #${withdrawId}: ${errMsg(data, "rejected")}`, "declined");
             } else {
                 pushLog(`Withdrew student #${withdrawId} from rolls`, "removed");
                 setWithdrawId("");
@@ -526,7 +541,7 @@ export default function StudentRecordsUI() {
                                         color: "#F3E6D2",
                                     }}
                                 >
-                                    <span>{entry.message}</span>
+                                    <span style={{ wordBreak: "break-word" }}>{entry.message}</span>
                                     <span style={{ color: "rgba(243,230,210,0.4)", whiteSpace: "nowrap" }}>
                     {entry.at.toLocaleTimeString()}
                   </span>

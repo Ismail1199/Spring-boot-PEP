@@ -10,9 +10,6 @@ public class CreateStudentRequestDTO {
     private String name;
     private int age;
     private String department;
-
-    @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Invalid email format")
-    private String Email;
+    private String email;
 
 }

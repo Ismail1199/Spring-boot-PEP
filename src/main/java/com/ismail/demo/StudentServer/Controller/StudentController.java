@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 public class StudentController {
 
@@ -31,7 +32,7 @@ public class StudentController {
     }
 
     @GetMapping("/getStudent/{id}")
-    public ResponseEntity<?> getStudentById(@PathVariable int id) throws Exception {
+    public ResponseEntity<?> getStudentById(@PathVariable int id) {
 
         Student student = studentService.getStudentById(id);
 

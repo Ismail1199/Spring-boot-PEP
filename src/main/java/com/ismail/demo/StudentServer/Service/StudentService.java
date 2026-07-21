@@ -20,13 +20,18 @@ public class StudentService {
 
     public CreateStudentResponseDTO studentValidate(CreateStudentRequestDTO createStudentRequestDTO) {
 
+        if (!isValidEmail(createStudentRequestDTO.getEmail())) {
+            throw new RuntimeException("Invalid email format");
+        }
+
         Student student = mapToStudent(createStudentRequestDTO);
         studentRepository.save(student);
+
         return mapToResponseDTO(student);
     }
 
-    public Student getStudentById(int id) throws Exception {
-        return studentRepository.findById(id).orElseThrow(()->new Exception());
+    public Student getStudentById(int id) {
+        return studentRepository.findById(id).orElse(null);
     }
 
     public Student studentUpdate(int id, Student student) {
@@ -79,4 +84,14 @@ public class StudentService {
         return createStudentResponseDTO;
 
     }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+
+        return email.matches(regex);
+    }
+
 }

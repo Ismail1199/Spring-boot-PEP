@@ -27,9 +27,7 @@ public class Student {
     @Size(min = 2, max = 50, message = "Department must be between 2 and 50 characters")
     private String department;
 
-    @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Invalid email format")
-    private String Email;
+    private String email;
 
     private LocalDateTime createdAt;
 
@@ -38,11 +36,11 @@ public class Student {
     // Getters and Setters
 
     public String getEmail() {
-        return Email;
+        return email;
     }
 
     public void setEmail(String email) {
-        Email = email;
+        this.email = email;
     }
 
     public LocalDateTime getCreatedAt() {
