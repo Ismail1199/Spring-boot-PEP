@@ -1,8 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Search, UserPlus, PenLine, Trash2, ChevronRight, Settings2, X } from "lucide-react";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+@keyframes stampThump {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(-14deg) scale(2.2); }
+  55% { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(0.94); }
+  70% { transform: translate(-50%, -50%) rotate(-14deg) scale(1.04); }
+  85% { transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
+  100% { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
+}
+@keyframes stampFade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
 `;
 
 function Field({ label, children }) {
@@ -105,28 +116,69 @@ function Tab({ active, onClick, children }) {
     );
 }
 
-function Card({ children }) {
+const STAMP_COLORS = {
+    brass: "#8A6423",
+    rust: "#8B4226",
+    slate: "#4A3626",
+};
+
+function Stamp({ stamp }) {
+    if (!stamp) return null;
+    const color = STAMP_COLORS[stamp.tone] || STAMP_COLORS.brass;
+    return (
+        <div
+            key={stamp.key}
+            style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                pointerEvents: "none",
+                zIndex: 5,
+                fontFamily: "'Special Elite', cursive",
+                fontSize: "clamp(28px, 6vw, 44px)",
+                letterSpacing: "3px",
+                textTransform: "uppercase",
+                color,
+                border: `5px double ${color}`,
+                borderRadius: "8px",
+                padding: "10px 22px",
+                background: "rgba(243,230,210,0.0)",
+                mixBlendMode: "multiply",
+                opacity: 0.85,
+                animation: "stampThump 0.5s cubic-bezier(.36,1.5,.5,1) both",
+                whiteSpace: "nowrap",
+            }}
+        >
+            {stamp.text}
+        </div>
+    );
+}
+
+function Card({ children, stamp }) {
     return (
         <div
             style={{
+                position: "relative",
                 background: "var(--parchment)",
                 color: "var(--ink)",
                 borderRadius: "6px",
                 padding: "26px",
                 boxShadow: "0 18px 40px rgba(0,0,0,0.35)",
+                overflow: "hidden",
             }}
         >
+            <Stamp stamp={stamp} />
             {children}
         </div>
     );
 }
 
-function StudentCard({ student }) {
+function StudentCard({ student, spaced = true }) {
     if (!student) return null;
     return (
         <div
             style={{
-                marginTop: "18px",
+                marginTop: spaced ? "18px" : 0,
                 border: "1.5px dashed var(--ink-30)",
                 borderRadius: "4px",
                 padding: "16px 18px",
@@ -147,9 +199,11 @@ function StudentCard({ student }) {
 
 function Row({ label, value }) {
     return (
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: "13px" }}>
-            <span style={{ color: "var(--ink-60)" }}>{label}</span>
-            <span>{value === undefined || value === null || value === "" ? "\u2014" : String(value)}</span>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: "14px", padding: "4px 0", fontSize: "13px" }}>
+            <span style={{ color: "var(--ink-60)", flexShrink: 0 }}>{label}</span>
+            <span style={{ textAlign: "right", wordBreak: "break-word" }}>
+                {value === undefined || value === null || value === "" ? "\u2014" : String(value)}
+            </span>
         </div>
     );
 }
@@ -184,6 +238,16 @@ export default function StudentRecordsUI() {
     // Withdraw
     const [withdrawId, setWithdrawId] = useState("");
 
+    // Stamp overlay
+    const [stamp, setStamp] = useState(null);
+    const stampTimer = useRef(null);
+
+    function showStamp(text, tone = "brass") {
+        clearTimeout(stampTimer.current);
+        setStamp({ text, tone, key: Date.now() + Math.random() });
+        stampTimer.current = setTimeout(() => setStamp(null), 1600);
+    }
+
     function pushLog(message, status = "success") {
         setLog((l) => [{ id: Date.now() + Math.random(), message, status, at: new Date() }, ...l].slice(0, 12));
     }
@@ -199,6 +263,7 @@ export default function StudentRecordsUI() {
             }
             if (data.detail) return data.detail; // Spring 6 ProblemDetail
             if (data.message) return data.message;
+            if (data.error) return `${data.error}${data.status ? ` (${data.status})` : ""}`;
         }
         return fallback;
     }
@@ -226,9 +291,11 @@ export default function StudentRecordsUI() {
             const { ok, data } = await request(`/getStudent/${lookupId}`);
             if (!ok) {
                 pushLog(`Lookup #${lookupId}: ${errMsg(data, "not found")}`, "declined");
+                showStamp("NOT FOUND", "rust");
             } else {
                 setLookupResult(data);
                 pushLog(`Pulled card for #${lookupId} \u2014 ${data.name}`, "success");
+                showStamp("FOUND", "brass");
             }
         } catch (e) {
             pushLog(`Lookup #${lookupId}: could not reach server`, "declined");
@@ -249,9 +316,11 @@ export default function StudentRecordsUI() {
             const { ok, data } = await request("/create", { method: "POST", body: JSON.stringify(body) });
             if (!ok) {
                 pushLog(`Enroll ${enrollForm.name || "student"}: ${errMsg(data, "rejected")}`, "declined");
+                showStamp("REJECTED", "rust");
             } else {
                 setEnrollResult(data);
                 pushLog(`Enrolled ${data.name} as #${data.id}`, "success");
+                showStamp("ENROLLED", "brass");
                 setEnrollForm({ name: "", age: "", department: "", email: "" });
             }
         } catch (e) {
@@ -269,6 +338,7 @@ export default function StudentRecordsUI() {
             const { ok, data } = await request(`/getStudent/${amendId}`);
             if (!ok) {
                 pushLog(`Pull card #${amendId}: ${errMsg(data, "not found")}`, "declined");
+                showStamp("NOT FOUND", "rust");
             } else {
                 setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
                 pushLog(`Pulled card #${amendId} for amendment`, "success");
@@ -293,8 +363,10 @@ export default function StudentRecordsUI() {
             const { ok, data } = await request(`/updateStudent/${amendId}`, { method: "PUT", body: JSON.stringify(body) });
             if (!ok) {
                 pushLog(`Amend #${amendId}: ${errMsg(data, "rejected")}`, "declined");
+                showStamp("REJECTED", "rust");
             } else {
                 pushLog(`Amended card #${amendId} \u2014 ${data.name}`, "success");
+                showStamp("AMENDED", "brass");
                 setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
             }
         } catch (e) {
@@ -311,8 +383,10 @@ export default function StudentRecordsUI() {
             const { ok, data } = await request(`/deleteStudent/${withdrawId}`, { method: "DELETE" });
             if (!ok) {
                 pushLog(`Withdraw #${withdrawId}: ${errMsg(data, "rejected")}`, "declined");
+                showStamp("REJECTED", "rust");
             } else {
                 pushLog(`Withdrew student #${withdrawId} from rolls`, "removed");
+                showStamp("WITHDRAWN", "slate");
                 setWithdrawId("");
             }
         } catch (e) {
@@ -343,7 +417,7 @@ export default function StudentRecordsUI() {
             }}
         >
             <style>{FONTS}</style>
-            <div style={{ maxWidth: "560px", margin: "0 auto" }}>
+            <div style={{ maxWidth: "760px", margin: "0 auto" }}>
                 {/* Header */}
                 <div style={{ marginBottom: "26px" }}>
                     <h1
@@ -370,7 +444,7 @@ export default function StudentRecordsUI() {
                     <Tab active={tab === "withdraw"} onClick={() => setTab("withdraw")}>Withdraw</Tab>
                 </div>
 
-                <Card>
+                <Card stamp={stamp}>
                     {tab === "lookup" && (
                         <>
                             <div style={{ marginBottom: "6px" }}>
@@ -393,47 +467,53 @@ export default function StudentRecordsUI() {
                     )}
 
                     {tab === "enroll" && (
-                        <>
-                            <Field label="Name">
-                                <TextInput
-                                    value={enrollForm.name}
-                                    onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
-                                    placeholder="Full name"
-                                />
-                            </Field>
-                            <Field label="Age">
-                                <TextInput
-                                    type="number"
-                                    value={enrollForm.age}
-                                    onChange={(e) => setEnrollForm({ ...enrollForm, age: e.target.value })}
-                                    placeholder="e.g. 20"
-                                />
-                            </Field>
-                            <Field label="Department">
-                                <TextInput
-                                    value={enrollForm.department}
-                                    onChange={(e) => setEnrollForm({ ...enrollForm, department: e.target.value })}
-                                    placeholder="e.g. Computer Science"
-                                />
-                            </Field>
-                            <Field label="Email">
-                                <TextInput
-                                    type="email"
-                                    value={enrollForm.email}
-                                    onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
-                                    placeholder="e.g. jane@example.com"
-                                />
-                            </Field>
-                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                <Button
-                                    onClick={doEnroll}
-                                    disabled={loading || !enrollForm.name || !enrollForm.department || !enrollForm.email || enrollForm.age === ""}
-                                >
-                                    <UserPlus size={13} /> Enroll student
-                                </Button>
+                        <div style={{ display: "flex", gap: "22px", alignItems: "flex-start" }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Field label="Name">
+                                    <TextInput
+                                        value={enrollForm.name}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
+                                        placeholder="Full name"
+                                    />
+                                </Field>
+                                <Field label="Age">
+                                    <TextInput
+                                        type="number"
+                                        value={enrollForm.age}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, age: e.target.value })}
+                                        placeholder="e.g. 20"
+                                    />
+                                </Field>
+                                <Field label="Department">
+                                    <TextInput
+                                        value={enrollForm.department}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, department: e.target.value })}
+                                        placeholder="e.g. Computer Science"
+                                    />
+                                </Field>
+                                <Field label="Email">
+                                    <TextInput
+                                        type="email"
+                                        value={enrollForm.email}
+                                        onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
+                                        placeholder="e.g. jane@example.com"
+                                    />
+                                </Field>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    <Button
+                                        onClick={doEnroll}
+                                        disabled={loading || !enrollForm.name || !enrollForm.department || !enrollForm.email || enrollForm.age === ""}
+                                    >
+                                        <UserPlus size={13} /> Enroll student
+                                    </Button>
+                                </div>
                             </div>
-                            <StudentCard student={enrollResult} />
-                        </>
+                            {enrollResult && (
+                                <div style={{ flex: "0 0 200px" }}>
+                                    <StudentCard student={enrollResult} spaced={false} />
+                                </div>
+                            )}
+                        </div>
                     )}
 
                     {tab === "amend" && (
