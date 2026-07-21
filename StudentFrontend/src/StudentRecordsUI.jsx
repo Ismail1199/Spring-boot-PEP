@@ -1,111 +1,21 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Search, UserPlus, PenLine, Trash2, Settings2, X, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { Search, UserPlus, PenLine, Trash2, ChevronRight, Settings2, X } from "lucide-react";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
 `;
 
-const TABS = [
-    { key: "lookup", label: "Look Up", icon: Search },
-    { key: "enroll", label: "Enroll", icon: UserPlus },
-    { key: "amend", label: "Amend", icon: PenLine },
-    { key: "password", label: "Password", icon: Settings2 },
-    { key: "withdraw", label: "Withdraw", icon: Trash2 },
-];
-
-function StampMark({ text, tone, show }) {
-    return (
-        <div
-            style={{
-                position: "absolute",
-                top: "38%",
-                right: "8%",
-                transform: show
-                    ? "rotate(-11deg) scale(1)"
-                    : "rotate(-11deg) scale(1.4)",
-                opacity: show ? 0.88 : 0,
-                transition: "opacity 420ms ease, transform 420ms ease",
-                pointerEvents: "none",
-                border: `3px solid ${tone}`,
-                color: tone,
-                borderRadius: "6px",
-                padding: "6px 14px",
-                fontFamily: "'Courier Prime', monospace",
-                fontWeight: 700,
-                fontSize: "20px",
-                letterSpacing: "3px",
-                textTransform: "uppercase",
-                mixBlendMode: "multiply",
-            }}
-        >
-            {text}
-        </div>
-    );
-}
-
-function RuledCard({ children, holePunch = true }) {
-    return (
-        <div
-            style={{
-                position: "relative",
-                background:
-                    "repeating-linear-gradient(var(--parchment), var(--parchment) 33px, var(--rule) 34px)",
-                backgroundColor: "var(--parchment)",
-                border: "1px solid var(--ink-20)",
-                boxShadow:
-                    "0 1px 0 rgba(255,255,255,0.5) inset, 0 18px 34px -18px rgba(20,26,20,0.45)",
-                borderRadius: "3px",
-                padding: "34px 30px 26px 56px",
-                minHeight: "360px",
-                overflow: "hidden",
-            }}
-        >
-            {holePunch && (
-                <div
-                    style={{
-                        position: "absolute",
-                        left: "26px",
-                        top: "0",
-                        bottom: "0",
-                        width: "1px",
-                        background:
-                            "repeating-linear-gradient(to bottom, var(--ink-30) 0 8px, transparent 8px 22px)",
-                    }}
-                />
-            )}
-            {holePunch &&
-                [1, 2, 3, 4].map((i) => (
-                    <div
-                        key={i}
-                        style={{
-                            position: "absolute",
-                            left: "18px",
-                            top: `${i * 78}px`,
-                            width: "14px",
-                            height: "14px",
-                            borderRadius: "50%",
-                            background: "var(--drawer)",
-                            boxShadow: "inset 0 2px 3px rgba(0,0,0,0.5)",
-                        }}
-                    />
-                ))}
-            {children}
-        </div>
-    );
-}
-
 function Field({ label, children }) {
     return (
-        <label style={{ display: "block", marginBottom: "16px" }}>
+        <label style={{ display: "block", marginBottom: "14px" }}>
       <span
           style={{
               display: "block",
-              fontFamily: "'Courier Prime', monospace",
-              fontSize: "10.5px",
-              letterSpacing: "1.5px",
+              fontSize: "11px",
+              letterSpacing: "1px",
               textTransform: "uppercase",
               color: "var(--ink-60)",
-              marginBottom: "5px",
+              marginBottom: "6px",
           }}
       >
         {label}
@@ -115,61 +25,141 @@ function Field({ label, children }) {
     );
 }
 
-const inputStyle = {
-    width: "100%",
-    background: "transparent",
-    border: "none",
-    borderBottom: "1.5px solid var(--ink-30)",
-    fontFamily: "'Courier Prime', monospace",
-    fontSize: "15px",
-    color: "var(--ink)",
-    padding: "4px 2px",
-    outline: "none",
-};
-
 function TextInput(props) {
     return (
         <input
             {...props}
-            style={inputStyle}
-            onFocus={(e) => (e.target.style.borderBottomColor = "var(--brass)")}
-            onBlur={(e) => (e.target.style.borderBottomColor = "var(--ink-30)")}
+            style={{
+                width: "100%",
+                background: "rgba(43,27,16,0.04)",
+                border: "1.5px solid var(--ink-20)",
+                borderRadius: "3px",
+                color: "var(--ink)",
+                fontFamily: "'Courier Prime', monospace",
+                fontSize: "14px",
+                padding: "9px 10px",
+                outline: "none",
+                boxSizing: "border-box",
+            }}
         />
     );
 }
 
-function Button({ children, onClick, tone = "brass", disabled, type = "button" }) {
-    const bg = tone === "brass" ? "var(--brass)" : tone === "rust" ? "var(--rust)" : "var(--slate)";
+const TONES = {
+    brass: { bg: "var(--brass)", fg: "#2B1B10" },
+    slate: { bg: "var(--slate)", fg: "#F3E6D2" },
+    rust: { bg: "var(--rust)", fg: "#F3E6D2" },
+};
+
+function Button({ children, tone = "brass", disabled, onClick }) {
+    const t = TONES[tone] || TONES.brass;
     return (
         <button
-            type={type}
             onClick={onClick}
             disabled={disabled}
             style={{
-                fontFamily: "'Courier Prime', monospace",
-                fontSize: "12.5px",
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                color: "var(--parchment)",
-                background: bg,
-                border: "none",
-                borderRadius: "2px",
-                padding: "11px 20px",
-                cursor: disabled ? "not-allowed" : "pointer",
-                opacity: disabled ? 0.55 : 1,
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "8px",
-                boxShadow: "0 4px 0 rgba(0,0,0,0.18)",
-                transition: "transform 120ms ease",
+                gap: "7px",
+                background: t.bg,
+                color: t.fg,
+                border: "none",
+                borderRadius: "3px",
+                padding: "10px 16px",
+                fontFamily: "'Courier Prime', monospace",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                cursor: disabled ? "not-allowed" : "pointer",
+                opacity: disabled ? 0.45 : 1,
+                transition: "transform 0.08s ease",
             }}
-            onMouseDown={(e) => !disabled && (e.currentTarget.style.transform = "translateY(3px)")}
-            onMouseUp={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
         >
             {children}
         </button>
     );
+}
+
+function Tab({ active, onClick, children }) {
+    return (
+        <button
+            onClick={onClick}
+            style={{
+                flex: 1,
+                background: active ? "var(--drawer)" : "transparent",
+                color: active ? "#F3E6D2" : "rgba(243,230,210,0.55)",
+                border: "1px solid rgba(243,230,210,0.18)",
+                borderBottom: active ? "3px solid var(--brass)" : "1px solid rgba(243,230,210,0.18)",
+                padding: "11px 8px",
+                fontFamily: "'Courier Prime', monospace",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+                cursor: "pointer",
+            }}
+        >
+            {children}
+        </button>
+    );
+}
+
+function Card({ children }) {
+    return (
+        <div
+            style={{
+                background: "var(--parchment)",
+                color: "var(--ink)",
+                borderRadius: "6px",
+                padding: "26px",
+                boxShadow: "0 18px 40px rgba(0,0,0,0.35)",
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
+function StudentCard({ student }) {
+    if (!student) return null;
+    return (
+        <div
+            style={{
+                marginTop: "18px",
+                border: "1.5px dashed var(--ink-30)",
+                borderRadius: "4px",
+                padding: "16px 18px",
+            }}
+        >
+            <div style={{ fontFamily: "'Special Elite', cursive", fontSize: "18px", marginBottom: "8px" }}>
+                {student.name || "(unnamed)"}
+            </div>
+            <Row label="ID" value={student.id} />
+            <Row label="Age" value={student.age} />
+            <Row label="Department" value={student.department} />
+            <Row label="Email" value={student.email} />
+            {student.createdAt && <Row label="Created" value={fmtDate(student.createdAt)} />}
+            {student.updatedAt && <Row label="Updated" value={fmtDate(student.updatedAt)} />}
+        </div>
+    );
+}
+
+function Row({ label, value }) {
+    return (
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: "13px" }}>
+            <span style={{ color: "var(--ink-60)" }}>{label}</span>
+            <span>{value === undefined || value === null || value === "" ? "\u2014" : String(value)}</span>
+        </div>
+    );
+}
+
+function fmtDate(d) {
+    try {
+        return new Date(d).toLocaleString();
+    } catch {
+        return d;
+    }
 }
 
 export default function StudentRecordsUI() {
@@ -177,177 +167,123 @@ export default function StudentRecordsUI() {
     const [showSettings, setShowSettings] = useState(false);
     const [tab, setTab] = useState("lookup");
     const [loading, setLoading] = useState(false);
-    const [ledger, setLedger] = useState([]);
-    const ledgerEndRef = useRef(null);
+    const [log, setLog] = useState([]);
 
+    // Lookup
     const [lookupId, setLookupId] = useState("");
-    const [record, setRecord] = useState(null);
-    const [lookupStamp, setLookupStamp] = useState(null);
+    const [lookupResult, setLookupResult] = useState(null);
 
-    const [enrollForm, setEnrollForm] = useState({ name: "", age: "", dept: "", password:"" });
-    const [enrollStamp, setEnrollStamp] = useState(null);
+    // Enroll
+    const [enrollForm, setEnrollForm] = useState({ name: "", age: "", department: "", email: "" });
+    const [enrollResult, setEnrollResult] = useState(null);
 
+    // Amend
     const [amendId, setAmendId] = useState("");
-    const [amendLoaded, setAmendLoaded] = useState(null);
-    const [amendForm, setAmendForm] = useState({ name: "", age: "", dept: "" });
-    const [amendStamp, setAmendStamp] = useState(null);
+    const [amendForm, setAmendForm] = useState(null);
 
-    const [passwordId, setPasswordId] = useState("");
-    const [passwordForm, setPasswordForm] = useState({oldPassword:"",newPassword:""});
-    const [passwordStamp, setPasswordStamp] = useState(null);
-
+    // Withdraw
     const [withdrawId, setWithdrawId] = useState("");
-    const [withdrawStamp, setWithdrawStamp] = useState(null);
 
-    useEffect(() => {
-        if (ledgerEndRef.current) {
-            ledgerEndRef.current.scrollTop = ledgerEndRef.current.scrollHeight;
-        }
-    }, [ledger]);
-
-    function addEntry(action, status, detail) {
-        setLedger((prev) => [
-            ...prev,
-            {
-                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                action,
-                status,
-                detail,
-            },
-        ]);
+    function pushLog(message, status = "success") {
+        setLog((l) => [{ id: Date.now() + Math.random(), message, status, at: new Date() }, ...l].slice(0, 12));
     }
 
-    async function call(path, options) {
+    async function request(path, options) {
         const res = await fetch(`${apiBase}${path}`, {
             headers: { "Content-Type": "application/json" },
             ...options,
         });
-        let body = null;
+        const text = await res.text();
+        let data;
         try {
-            body = await res.json();
-        } catch (e) {
-            body = null;
+            data = text ? JSON.parse(text) : null;
+        } catch {
+            data = text;
         }
-        return { ok: res.ok, status: res.status, body };
+        return { ok: res.ok, status: res.status, data };
     }
 
     async function doLookup() {
         if (!lookupId) return;
         setLoading(true);
-        setLookupStamp(null);
-        setRecord(null);
+        setLookupResult(null);
         try {
-            const { ok, status, body } = await call(`/get/${lookupId}`);
-            if (ok && body) {
-                setRecord(body);
-                setLookupStamp({ text: "on file", tone: "var(--slate)" });
-                addEntry("look up", "found", `#${lookupId} located`);
+            const { ok, data } = await request(`/getStudent/${lookupId}`);
+            if (!ok) {
+                pushLog(`Lookup #${lookupId}: ${typeof data === "string" ? data : "not found"}`, "declined");
             } else {
-                setLookupStamp({ text: "not found", tone: "var(--rust)" });
-                addEntry("look up", "declined", `#${lookupId} — ${status}`);
+                setLookupResult(data);
+                pushLog(`Pulled card for #${lookupId} \u2014 ${data.name}`, "success");
             }
         } catch (e) {
-            setLookupStamp({ text: "no connection", tone: "var(--rust)" });
-            addEntry("look up", "error", e.message);
+            pushLog(`Lookup #${lookupId}: could not reach server`, "declined");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     async function doEnroll() {
         setLoading(true);
-        setEnrollStamp(null);
         try {
-            const payload = {
+            const body = {
                 name: enrollForm.name,
                 age: Number(enrollForm.age),
-                dept: enrollForm.dept,
-                password: enrollForm.password,
+                department: enrollForm.department,
+                email: enrollForm.email,
             };
-            const { ok, status, body } = await call("/create", {
-                method: "POST",
-                body: JSON.stringify(payload),
-            });
-            if (ok && body) {
-                setEnrollStamp({ text: "enrolled", tone: "var(--slate)" });
-                addEntry("enroll", "recorded", `#${body.id} ${payload.name}`);
-                setEnrollForm({ name: "", age: "", dept: "", password:"" });
+            const { ok, data } = await request("/create", { method: "POST", body: JSON.stringify(body) });
+            if (!ok) {
+                pushLog(`Enroll ${enrollForm.name || "student"}: ${typeof data === "string" ? data : "rejected"}`, "declined");
             } else {
-                setEnrollStamp({ text: "declined", tone: "var(--rust)" });
-                addEntry("enroll", "declined", `${payload.name || "unnamed"} — invalid fields (${status})`);
+                setEnrollResult(data);
+                pushLog(`Enrolled ${data.name} as #${data.id}`, "success");
+                setEnrollForm({ name: "", age: "", department: "", email: "" });
             }
         } catch (e) {
-            setEnrollStamp({ text: "no connection", tone: "var(--rust)" });
-            addEntry("enroll", "error", e.message);
+            pushLog("Enroll: could not reach server", "declined");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     async function loadForAmend() {
         if (!amendId) return;
         setLoading(true);
-        setAmendStamp(null);
-        setAmendLoaded(null);
+        setAmendForm(null);
         try {
-            const { ok, body, status } = await call(`/get/${amendId}`);
-            if (ok && body) {
-                setAmendLoaded(body);
-                setAmendForm({ name: body.name || "", age: body.age ?? "", dept: body.department || "" });
+            const { ok, data } = await request(`/getStudent/${amendId}`);
+            if (!ok) {
+                pushLog(`Pull card #${amendId}: ${typeof data === "string" ? data : "not found"}`, "declined");
             } else {
-                setAmendStamp({ text: "not found", tone: "var(--rust)" });
-                addEntry("amend", "declined", `#${amendId} — ${status}`);
+                setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
+                pushLog(`Pulled card #${amendId} for amendment`, "success");
             }
         } catch (e) {
-            setAmendStamp({ text: "no connection", tone: "var(--rust)" });
-            addEntry("amend", "error", e.message);
+            pushLog(`Pull card #${amendId}: could not reach server`, "declined");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     async function doAmend() {
-        if (!amendLoaded) return;
+        if (!amendId || !amendForm) return;
         setLoading(true);
-        setAmendStamp(null);
         try {
-            const payload = {
+            const body = {
                 name: amendForm.name,
                 age: Number(amendForm.age),
+                department: amendForm.department,
+                email: amendForm.email,
             };
-            const { ok, status } = await call(`/update/${amendId}`, {
-                method: "PUT",
-                body: JSON.stringify(payload),
-            });
-            if (ok) {
-                setAmendStamp({ text: "amended", tone: "var(--slate)" });
-                addEntry("amend", "recorded", `#${amendId} updated`);
+            const { ok, data } = await request(`/updateStudent/${amendId}`, { method: "PUT", body: JSON.stringify(body) });
+            if (!ok) {
+                pushLog(`Amend #${amendId}: ${typeof data === "string" ? data : "rejected"}`, "declined");
             } else {
-                setAmendStamp({ text: "declined", tone: "var(--rust)" });
-                addEntry("amend", "declined", `#${amendId} — ${status}`);
+                pushLog(`Amended card #${amendId} \u2014 ${data.name}`, "success");
+                setAmendForm({ name: data.name || "", age: data.age ?? "", department: data.department || "", email: data.email || "" });
             }
         } catch (e) {
-            setAmendStamp({ text: "no connection", tone: "var(--rust)" });
-            addEntry("amend", "error", e.message);
-        }
-        setLoading(false);
-    }
-
-
-    async function doChangePassword() {
-        if (!passwordId) return;
-        setLoading(true);
-        setPasswordStamp(null);
-        try {
-            const { ok, status } = await call(`/change-password/${passwordId}`, {
-                method: "PUT",
-                body: JSON.stringify(passwordForm),
-            });
-            if (ok) {
-                setPasswordStamp({ text: "changed", tone: "var(--slate)" });
-                addEntry("password", "recorded", `#${passwordId} password changed`);
-                setPasswordForm({oldPassword:"",newPassword:""});
-            } else {
-                setPasswordStamp({ text: "declined", tone: "var(--rust)" });
-                addEntry("password", "declined", `#${passwordId} - ${status}`);
-            }
+            pushLog(`Amend #${amendId}: could not reach server`, "declined");
         } finally {
             setLoading(false);
         }
@@ -356,22 +292,19 @@ export default function StudentRecordsUI() {
     async function doWithdraw() {
         if (!withdrawId) return;
         setLoading(true);
-        setWithdrawStamp(null);
         try {
-            const { ok, status } = await call(`/delete/${withdrawId}`, { method: "DELETE" });
-            if (ok) {
-                setWithdrawStamp({ text: "withdrawn", tone: "var(--rust)" });
-                addEntry("withdraw", "removed", `#${withdrawId} removed`);
-                setWithdrawId("");
+            const { ok, data } = await request(`/deleteStudent/${withdrawId}`, { method: "DELETE" });
+            if (!ok) {
+                pushLog(`Withdraw #${withdrawId}: ${typeof data === "string" ? data : "rejected"}`, "declined");
             } else {
-                setWithdrawStamp({ text: "not found", tone: "var(--slate)" });
-                addEntry("withdraw", "declined", `#${withdrawId} — ${status}`);
+                pushLog(`Withdrew student #${withdrawId} from rolls`, "removed");
+                setWithdrawId("");
             }
         } catch (e) {
-            setWithdrawStamp({ text: "no connection", tone: "var(--rust)" });
-            addEntry("withdraw", "error", e.message);
+            pushLog(`Withdraw #${withdrawId}: could not reach server`, "declined");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }
 
     return (
@@ -388,99 +321,49 @@ export default function StudentRecordsUI() {
                 "--slate": "#6F4E37",
                 "--drawer": "#3E2B1D",
                 fontFamily: "'Courier Prime', monospace",
-                background:
-                    "radial-gradient(ellipse at top, #4A3222 0%, #3E2B1D 55%, #241811 100%)",
-                minHeight: "100%",
-                padding: "36px 20px 50px",
-                color: "var(--ink)",
+                background: "radial-gradient(ellipse at top, #4A3222 0%, #3E2B1D 55%, #241811 100%)",
+                minHeight: "100vh",
+                padding: "40px 20px",
+                boxSizing: "border-box",
             }}
         >
             <style>{FONTS}</style>
-
-            <div style={{ maxWidth: "760px", margin: "0 auto" }}>
-                {/* Header / drawer plate */}
-                <div
-                    style={{
-                        display: "flex",
-                        alignItems: "flex-end",
-                        justifyContent: "space-between",
-                        marginBottom: "22px",
-                        color: "#F3E6D2",
-                    }}
-                >
-                    <div>
-                        <div
-                            style={{
-                                fontFamily: "'Courier Prime', monospace",
-                                fontSize: "11px",
-                                letterSpacing: "3px",
-                                textTransform: "uppercase",
-                                opacity: 0.65,
-                                marginBottom: "6px",
-                            }}
-                        >
-                            Registrar&rsquo;s Office &middot; Card Catalog
-                        </div>
-                        <h1
-                            style={{
-                                fontFamily: "'Special Elite', cursive",
-                                fontWeight: 600,
-                                fontSize: "34px",
-                                margin: 0,
-                                letterSpacing: "0.5px",
-                            }}
-                        >
-                            Student Records
-                        </h1>
+            <div style={{ maxWidth: "560px", margin: "0 auto" }}>
+                {/* Header */}
+                <div style={{ marginBottom: "26px" }}>
+                    <h1
+                        style={{
+                            fontFamily: "'Special Elite', cursive",
+                            color: "#F3E6D2",
+                            fontSize: "30px",
+                            margin: 0,
+                            letterSpacing: "0.5px",
+                        }}
+                    >
+                        Student Records
+                    </h1>
+                    <div style={{ color: "rgba(243,230,210,0.5)", fontSize: "12px", marginTop: "4px" }}>
+                        create &middot; look up &middot; amend &middot; withdraw
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div style={{ display: "flex", gap: "2px", marginBottom: "0" }}>
-                    {TABS.map(({ key, label, icon: Icon }) => {
-                        const active = tab === key;
-                        return (
-                            <button
-                                key={key}
-                                onClick={() => setTab(key)}
-                                style={{
-                                    flex: 1,
-                                    background: active ? "var(--parchment)" : "rgba(243,230,210,0.14)",
-                                    color: active ? "var(--ink)" : "#F3E6D2",
-                                    border: "none",
-                                    borderTopLeftRadius: "6px",
-                                    borderTopRightRadius: "6px",
-                                    padding: "12px 8px",
-                                    fontFamily: "'Courier Prime', monospace",
-                                    fontSize: "11.5px",
-                                    letterSpacing: "1.2px",
-                                    textTransform: "uppercase",
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    gap: "6px",
-                                    transform: active ? "translateY(0)" : "translateY(4px)",
-                                    transition: "transform 160ms ease",
-                                }}
-                            >
-                                <Icon size={14} /> {label}
-                            </button>
-                        );
-                    })}
+                <div style={{ display: "flex", marginBottom: "20px" }}>
+                    <Tab active={tab === "lookup"} onClick={() => setTab("lookup")}>Lookup</Tab>
+                    <Tab active={tab === "enroll"} onClick={() => setTab("enroll")}>Enroll</Tab>
+                    <Tab active={tab === "amend"} onClick={() => setTab("amend")}>Amend</Tab>
+                    <Tab active={tab === "withdraw"} onClick={() => setTab("withdraw")}>Withdraw</Tab>
                 </div>
 
-                {/* Card panel */}
-                <div style={{ position: "relative" }}>
+                <Card>
                     {tab === "lookup" && (
-                        <RuledCard>
-                            <StampMark text={lookupStamp?.text || ""} tone={lookupStamp?.tone || "var(--slate)"} show={!!lookupStamp} />
-                            <div style={{ marginBottom: "22px" }}>
+                        <>
+                            <div style={{ marginBottom: "6px" }}>
                                 <Field label="Student ID">
                                     <TextInput
                                         value={lookupId}
                                         onChange={(e) => setLookupId(e.target.value)}
-                                        placeholder="e.g. 1231"
+                                        placeholder="e.g. 1"
                                         onKeyDown={(e) => e.key === "Enter" && doLookup()}
                                     />
                                 </Field>
@@ -490,70 +373,62 @@ export default function StudentRecordsUI() {
                                     </Button>
                                 </div>
                             </div>
-
-                            {record ? (
-                                <div>
-                                    <div style={{ fontFamily: "'Special Elite', cursive", fontSize: "22px", marginBottom: "10px" }}>
-                                        {record.name}
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "13.5px" }}>
-                                        <div><span style={{ color: "var(--ink-60)" }}>ID &middot; </span>{record.id}</div>
-                                        <div><span style={{ color: "var(--ink-60)" }}>Age &middot; </span>{record.age}</div>
-                                        <div style={{ gridColumn: "1 / -1" }}><span style={{ color: "var(--ink-60)" }}>Department &middot; </span>{record.dept}</div>
-                                    </div>
-                                    <div style={{ marginTop: "14px", paddingTop: "10px", borderTop: "1px dashed var(--ink-20)", fontSize: "11px", color: "var(--ink-60)" }}>
-                                        {record.createdAt && <div>Filed &middot; {new Date(record.createdAt).toLocaleString()}</div>}
-                                        {record.updatedAt && <div>Last amended &middot; {new Date(record.updatedAt).toLocaleString()}</div>}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div style={{ color: "var(--ink-60)", fontSize: "13px" }}>
-                                    Enter a student ID to pull their card from the drawer.
-                                </div>
-                            )}
-                        </RuledCard>
+                            <StudentCard student={lookupResult} />
+                        </>
                     )}
 
                     {tab === "enroll" && (
-                        <RuledCard>
-                            <StampMark text={enrollStamp?.text || ""} tone={enrollStamp?.tone || "var(--slate)"} show={!!enrollStamp} />
-                            <div style={{ color: "var(--ink-60)", fontSize: "12px", marginBottom: "16px" }}>
-                                A student ID is assigned automatically once the card is filed.
-                            </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
-                                <Field label="Full name">
-                                    <TextInput value={enrollForm.name} onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })} placeholder="Enter your name" />
-                                </Field>
-                                <Field label="Age">
-                                    <TextInput value={enrollForm.age} onChange={(e) => setEnrollForm({ ...enrollForm, age: e.target.value })} placeholder="Enter your age" />
-                                </Field>
-                                <Field label="Department">
-                                    <TextInput value={enrollForm.dept} onChange={(e) => setEnrollForm({ ...enrollForm, dept: e.target.value })} placeholder="Enter your department" />
-                                </Field>
-                                <Field label="Password">
-                                    <TextInput type="password" value={enrollForm.password} onChange={(e)=>setEnrollForm({...enrollForm,password:e.target.value})} placeholder="Create a password"/>
-                                </Field>
-                            </div>
-                            <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end" }}>
+                        <>
+                            <Field label="Name">
+                                <TextInput
+                                    value={enrollForm.name}
+                                    onChange={(e) => setEnrollForm({ ...enrollForm, name: e.target.value })}
+                                    placeholder="Full name"
+                                />
+                            </Field>
+                            <Field label="Age">
+                                <TextInput
+                                    type="number"
+                                    value={enrollForm.age}
+                                    onChange={(e) => setEnrollForm({ ...enrollForm, age: e.target.value })}
+                                    placeholder="e.g. 20"
+                                />
+                            </Field>
+                            <Field label="Department">
+                                <TextInput
+                                    value={enrollForm.department}
+                                    onChange={(e) => setEnrollForm({ ...enrollForm, department: e.target.value })}
+                                    placeholder="e.g. Computer Science"
+                                />
+                            </Field>
+                            <Field label="Email">
+                                <TextInput
+                                    type="email"
+                                    value={enrollForm.email}
+                                    onChange={(e) => setEnrollForm({ ...enrollForm, email: e.target.value })}
+                                    placeholder="e.g. jane@example.com"
+                                />
+                            </Field>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
                                 <Button
                                     onClick={doEnroll}
-                                    disabled={loading || !enrollForm.name || !enrollForm.dept || !enrollForm.password || enrollForm.age === ""}
+                                    disabled={loading || !enrollForm.name || !enrollForm.department || !enrollForm.email || enrollForm.age === ""}
                                 >
                                     <UserPlus size={13} /> Enroll student
                                 </Button>
                             </div>
-                        </RuledCard>
+                            <StudentCard student={enrollResult} />
+                        </>
                     )}
 
                     {tab === "amend" && (
-                        <RuledCard>
-                            <StampMark text={amendStamp?.text || ""} tone={amendStamp?.tone || "var(--slate)"} show={!!amendStamp} />
-                            <div style={{ marginBottom: "20px" }}>
+                        <>
+                            <div style={{ marginBottom: amendForm ? "20px" : "0" }}>
                                 <Field label="Student ID to amend">
                                     <TextInput
                                         value={amendId}
                                         onChange={(e) => setAmendId(e.target.value)}
-                                        placeholder="e.g. 1231"
+                                        placeholder="e.g. 1"
                                         onKeyDown={(e) => e.key === "Enter" && loadForAmend()}
                                     />
                                 </Field>
@@ -564,18 +439,35 @@ export default function StudentRecordsUI() {
                                 </div>
                             </div>
 
-                            {amendLoaded && (
+                            {amendForm && (
                                 <>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
-                                        <Field label="Full name">
-                                            <TextInput value={amendForm.name} onChange={(e) => setAmendForm({ ...amendForm, name: e.target.value })} />
+                                    <div style={{ borderTop: "1px solid var(--rule)", paddingTop: "16px" }}>
+                                        <Field label="Name">
+                                            <TextInput
+                                                value={amendForm.name}
+                                                onChange={(e) => setAmendForm({ ...amendForm, name: e.target.value })}
+                                            />
                                         </Field>
                                         <Field label="Age">
-                                            <TextInput value={amendForm.age} onChange={(e) => setAmendForm({ ...amendForm, age: e.target.value })} />
+                                            <TextInput
+                                                type="number"
+                                                value={amendForm.age}
+                                                onChange={(e) => setAmendForm({ ...amendForm, age: e.target.value })}
+                                            />
                                         </Field>
-                                        {/*<Field label="Department">*/}
-                                        {/*  <TextInput value={amendForm.dept} onChange={(e) => setAmendForm({ ...amendForm, dept: e.target.value })} />*/}
-                                        {/*</Field>*/}
+                                        <Field label="Department">
+                                            <TextInput
+                                                value={amendForm.department}
+                                                onChange={(e) => setAmendForm({ ...amendForm, department: e.target.value })}
+                                            />
+                                        </Field>
+                                        <Field label="Email">
+                                            <TextInput
+                                                type="email"
+                                                value={amendForm.email}
+                                                onChange={(e) => setAmendForm({ ...amendForm, email: e.target.value })}
+                                            />
+                                        </Field>
                                     </div>
                                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
                                         <Button onClick={doAmend} disabled={loading}>
@@ -584,133 +476,68 @@ export default function StudentRecordsUI() {
                                     </div>
                                 </>
                             )}
-
-                            {!amendLoaded && (
-                                <div style={{ color: "var(--ink-60)", fontSize: "13px" }}>
-                                    Pull a card by ID, then edit its fields below.
-                                </div>
-                            )}
-                        </RuledCard>
-                    )}
-
-
-                    {tab === "password" && (
-                        <RuledCard>
-                            <StampMark text={passwordStamp?.text || ""} tone={passwordStamp?.tone || "var(--slate)"} show={!!passwordStamp}/>
-                            <Field label="Student ID">
-                                <TextInput value={passwordId} onChange={(e)=>setPasswordId(e.target.value)} />
-                            </Field>
-                            <Field label="Old Password">
-                                <TextInput type="password" value={passwordForm.oldPassword}
-                                           onChange={(e)=>setPasswordForm({...passwordForm,oldPassword:e.target.value})}/>
-                            </Field>
-                            <Field label="New Password">
-                                <TextInput type="password" value={passwordForm.newPassword}
-                                           onChange={(e)=>setPasswordForm({...passwordForm,newPassword:e.target.value})}/>
-                            </Field>
-                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                <Button onClick={doChangePassword} disabled={loading || !passwordId || !passwordForm.oldPassword || !passwordForm.newPassword}>
-                                    Change Password
-                                </Button>
-                            </div>
-                        </RuledCard>
+                        </>
                     )}
 
                     {tab === "withdraw" && (
-                        <RuledCard>
-                            <StampMark text={withdrawStamp?.text || ""} tone={withdrawStamp?.tone || "var(--rust)"} show={!!withdrawStamp} />
-                            <div>
-                                <Field label="Student ID to withdraw">
-                                    <TextInput
-                                        value={withdrawId}
-                                        onChange={(e) => setWithdrawId(e.target.value)}
-                                        placeholder="e.g. 1231"
-                                        onKeyDown={(e) => e.key === "Enter" && doWithdraw()}
-                                    />
-                                </Field>
-                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                                    <Button onClick={doWithdraw} disabled={loading || !withdrawId} tone="rust">
-                                        <Trash2 size={13} /> Withdraw
-                                    </Button>
-                                </div>
+                        <div>
+                            <Field label="Student ID to withdraw">
+                                <TextInput
+                                    value={withdrawId}
+                                    onChange={(e) => setWithdrawId(e.target.value)}
+                                    placeholder="e.g. 1"
+                                    onKeyDown={(e) => e.key === "Enter" && doWithdraw()}
+                                />
+                            </Field>
+                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                <Button onClick={doWithdraw} disabled={loading || !withdrawId} tone="rust">
+                                    <Trash2 size={13} /> Withdraw
+                                </Button>
                             </div>
-                            <div style={{ color: "var(--ink-60)", fontSize: "13px", marginTop: "18px" }}>
-                                This pulls the card from the drawer for good — there is no undo.
-                            </div>
-                        </RuledCard>
+                        </div>
                     )}
-                </div>
+                </Card>
 
                 {/* Ledger */}
-                <div style={{ marginTop: "26px" }}>
-                    <div
-                        style={{
-                            color: "rgba(243,230,210,0.55)",
-                            fontSize: "10.5px",
-                            letterSpacing: "2px",
-                            textTransform: "uppercase",
-                            marginBottom: "8px",
-                        }}
-                    >
-                        Activity Ledger
-                    </div>
-                    <div
-                        ref={ledgerEndRef}
-                        style={{
-                            background: "rgba(20,32,26,0.55)",
-                            border: "1px solid rgba(243,230,210,0.14)",
-                            borderRadius: "4px",
-                            maxHeight: "160px",
-                            overflowY: "auto",
-                            padding: "10px 14px",
-                        }}
-                    >
-                        {ledger.length === 0 && (
-                            <div style={{ color: "rgba(243,230,210,0.4)", fontSize: "12.5px" }}>
-                                No entries yet. Actions taken on the cards above are logged here.
-                            </div>
-                        )}
-                        {ledger.map((entry, i) => (
-                            <div
-                                key={i}
-                                style={{
-                                    display: "flex",
-                                    gap: "10px",
-                                    fontSize: "12.5px",
-                                    color: "#F3E6D2",
-                                    padding: "4px 0",
-                                    borderBottom: i < ledger.length - 1 ? "1px solid rgba(243,230,210,0.08)" : "none",
-                                }}
-                            >
-                                <span style={{ opacity: 0.45, minWidth: "72px" }}>{entry.time}</span>
-                                <span style={{ minWidth: "70px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.8 }}>
-                  {entry.action}
-                </span>
-                                <span
+                {log.length > 0 && (
+                    <div style={{ marginTop: "18px" }}>
+                        <div style={{ color: "rgba(243,230,210,0.45)", fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "8px" }}>
+                            Activity
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                            {log.map((entry) => (
+                                <div
+                                    key={entry.id}
                                     style={{
-                                        color:
-                                            entry.status === "error" || entry.status === "declined"
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        gap: "10px",
+                                        fontSize: "12px",
+                                        padding: "7px 10px",
+                                        background: "rgba(243,230,210,0.06)",
+                                        borderRadius: "3px",
+                                        borderLeft: `3px solid ${
+                                            entry.status === "declined"
                                                 ? "#D98A6B"
                                                 : entry.status === "removed"
                                                     ? "#D9B27D"
-                                                    : "#B7C48A",
+                                                    : "#B7C48A"
+                                        }`,
+                                        color: "#F3E6D2",
                                     }}
                                 >
-                  {entry.status}
-                </span>
-                                <span style={{ opacity: 0.7 }}>{entry.detail}</span>
-                            </div>
-                        ))}
+                                    <span>{entry.message}</span>
+                                    <span style={{ color: "rgba(243,230,210,0.4)", whiteSpace: "nowrap" }}>
+                    {entry.at.toLocaleTimeString()}
+                  </span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginTop: "22px",
-                    }}
-                >
+                {/* Server settings */}
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "22px" }}>
                     <button
                         onClick={() => setShowSettings((s) => !s)}
                         style={{
