@@ -4,35 +4,60 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
 @Entity
 public class Student {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
-    String name;
-    int age;
-    String dept;
-    String password;
+    private int id;
+    private String name;
+
+    @Min(value = 1, message = "Age must be greater than 0")
+    private int age;
+
+    @NotBlank(message = "Department cannot be empty")
+    @Size(min = 2, max = 50, message = "Department must be between 2 and 50 characters")
+    private String department;
+
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
+    private String Email;
 
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
-    public LocalDateTime getCreatedAt(){
+    // Getters and Setters
+
+    public String getEmail() {
+        return Email;
+    }
+
+    public void setEmail(String email) {
+        Email = email;
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt){
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt(){
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt){
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -56,26 +81,15 @@ public class Student {
         return age;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public void setAge(int age) {
         this.age = age;
     }
 
-    public String getDept() {
-        return dept;
+    public String getDepartment() {
+        return department;
     }
 
-    public void setDept(String dept) {
-        this.dept = dept;
+    public void setDepartment(String department) {
+        this.department = department;
     }
-
-
-
 }

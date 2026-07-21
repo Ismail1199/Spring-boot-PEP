@@ -499,7 +499,7 @@ export default function StudentRecordsUI() {
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "13.5px" }}>
                                         <div><span style={{ color: "var(--ink-60)" }}>ID &middot; </span>{record.id}</div>
                                         <div><span style={{ color: "var(--ink-60)" }}>Age &middot; </span>{record.age}</div>
-                                        <div style={{ gridColumn: "1 / -1" }}><span style={{ color: "var(--ink-60)" }}>Department &middot; </span>{record.department}</div>
+                                        <div style={{ gridColumn: "1 / -1" }}><span style={{ color: "var(--ink-60)" }}>Department &middot; </span>{record.dept}</div>
                                     </div>
                                     <div style={{ marginTop: "14px", paddingTop: "10px", borderTop: "1px dashed var(--ink-20)", fontSize: "11px", color: "var(--ink-60)" }}>
                                         {record.createdAt && <div>Filed &middot; {new Date(record.createdAt).toLocaleString()}</div>}
